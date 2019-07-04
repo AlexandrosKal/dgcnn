@@ -240,7 +240,7 @@ def eval_one_epoch(sess, ops, test_writer):
     #a      |
     #l      |
     #cfn_matrix = np.zeroes(NUM_CLASSES, NUM_CLASSES);
-    cfn_matrix = np.zeroes(2,2);
+    cfn_matrix = np.zeros((2,2));
     total_seen_class = [0 for _ in range(NUM_CLASSES)]
     total_correct_class = [0 for _ in range(NUM_CLASSES)]
 
