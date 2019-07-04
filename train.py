@@ -51,7 +51,7 @@ LOG_FOUT = open(os.path.join(LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
 
 MAX_NUM_POINT = 2048
-NUM_CLASSES = 40
+NUM_CLASSES = 2
 
 BN_INIT_DECAY = 0.5
 BN_DECAY_DECAY_RATE = 0.5
@@ -231,6 +231,16 @@ def eval_one_epoch(sess, ops, test_writer):
     total_correct = 0
     total_seen = 0
     loss_sum = 0
+    #confusion matrix
+    #   predicted
+    #a      |
+    #c      |
+    #t _____|_____
+    #u      |
+    #a      |
+    #l      |
+    #cfn_matrix = np.zeroes(NUM_CLASSES, NUM_CLASSES);
+    cfn_matrix = np.zeroes(2,2);
     total_seen_class = [0 for _ in range(NUM_CLASSES)]
     total_correct_class = [0 for _ in range(NUM_CLASSES)]
 
@@ -259,12 +269,22 @@ def eval_one_epoch(sess, ops, test_writer):
             loss_sum += (loss_val*BATCH_SIZE)
             for i in range(start_idx, end_idx):
                 l = current_label[i]
+                #fill confusion matrix
+                if (pred_val[i-start_idx] == l):
+                    cfn_matrix[l,l] += 1
+                else:
+                    #cfn_matrix[l,NUM_CLASSES-1-l] += 1
+                    cfn_matrix[l, 1-l] += 1
+
+
                 total_seen_class[l] += 1
                 total_correct_class[l] += (pred_val[i-start_idx] == l)
 
     log_string('eval mean loss: %f' % (loss_sum / float(total_seen)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
+    log_string('eval precision: %f' % (cfn_matrix[0,0]/np.sum(cfn_matrix[:,0])))
+    log_string('eval recall: %f' %(cfn_matrix[0,0]/np.sum(cfn_matrix[0,:])))
 
 
 
