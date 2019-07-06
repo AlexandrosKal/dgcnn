@@ -280,12 +280,27 @@ def eval_one_epoch(sess, ops, test_writer):
                 total_seen_class[l] += 1
                 total_correct_class[l] += (pred_val[i-start_idx] == l)
 
+    log_string('Confusion Matrix')
+    log_string('   %6s  %6s' % ('A', 'B'))
+    log_string('A  %6d  %6d' % (cfn_matrix[0,0], cfn_matrix[0,1]))
+    log_string('B  %6d  %6d' % (cfn_matrix[1,0], cfn_matrix[1,1]))
+
     log_string('eval mean loss: %f' % (loss_sum / float(total_seen)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
-    log_string('eval precision: %f' % (cfn_matrix[0,0]/np.sum(cfn_matrix[:,0])))
-    log_string('eval recall: %f' %(cfn_matrix[0,0]/np.sum(cfn_matrix[0,:])))
 
+    if cfn_matrix[0,0] == 0 and cfn_matrix[0,1] == 0 and cfn_matrix[1,0] == 0:
+        precision = 1
+        recall = 1
+    elif cfn_matrix[0,0] == 0 and (cfn_matrix[0,1] != 0 or cfn_matrix[1,0] != 0):
+        precision = 0
+        recall = 0
+    else:
+        precision = cfn_matrix[0,0]/np.sum(cfn_matrix[:,0])
+        recall = cfn_matrix[0,0]/np.sum(cfn_matrix[0,:])
+
+    log_string('eval precision: %f' % precision)
+    log_string('eval recall: %f' % recall)
 
 
 if __name__ == "__main__":
